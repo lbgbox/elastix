@@ -21,9 +21,8 @@
 #include "elastixlib.h"
 #include "elxConversion.h"
 #include "elxElastixMain.h"
-#include "itkUseMevisDicomTiff.h"
-
 #include <Core/elxVersionMacros.h>
+#include "itkUseMevisDicomTiff.h"
 
 // ITK header files:
 #include <itkTimeProbe.h>
@@ -76,17 +75,13 @@ Main(const int argc, const char * const * const argv)
     }
     else if (argument == "--version")
     {
-      std::cout << std::fixed;
-      std::cout << std::showpoint;
-      std::cout << std::setprecision(3);
-      std::cout << "elastix version: " << ELASTIX_VERSION_STRING << std::endl;
+      std::cout << "elastix version: " ELASTIX_VERSION_STRING << std::endl;
       return 0;
     }
     else if (argument == "--extended-version")
     {
-      std::cout << std::fixed << std::showpoint << std::setprecision(3) << "elastix version: " << ELASTIX_VERSION_STRING
-                << "\nITK version: " << ITK_VERSION_MAJOR << '.' << ITK_VERSION_MINOR << '.' << ITK_VERSION_PATCH
-                << "\nBuild date: " << __DATE__ << ' ' << __TIME__
+      std::cout << "elastix version: " ELASTIX_VERSION_STRING << "\nITK version: " << ITK_VERSION_MAJOR << '.'
+                << ITK_VERSION_MINOR << '.' << ITK_VERSION_PATCH << "\nBuild date: " << __DATE__ << ' ' << __TIME__
 #ifdef _MSC_FULL_VER
                 << "\nCompiler: Visual C++ version " << _MSC_FULL_VER << '.' << _MSC_BUILD
 #endif
@@ -151,7 +146,7 @@ Main(const int argc, const char * const * const argv)
       if (key == "-out")
       {
         /** Make sure that last character of the output folder equals a '/' or '\'. */
-        const char last = value[value.size() - 1];
+        const char last = value.back();
         if (last != '/' && last != '\\')
         {
           value.append("/");
@@ -322,10 +317,7 @@ void
 PrintHelp(void)
 {
   /** Print the version. */
-  std::cout << std::fixed;
-  std::cout << std::showpoint;
-  std::cout << std::setprecision(3);
-  std::cout << "elastix version: " << ELASTIX_VERSION_STRING << "\n" << std::endl;
+  std::cout << "elastix version: " << ELASTIX_VERSION_STRING "\n\n";
 
   /** What is elastix? */
   std::cout << "elastix registers a moving image to a fixed image.\n"
