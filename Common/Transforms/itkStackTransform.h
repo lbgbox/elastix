@@ -44,9 +44,6 @@ public:
   typedef SmartPointer<Self>                                                  Pointer;
   typedef SmartPointer<const Self>                                            ConstPointer;
 
-  /** New method for creating an object using a factory. */
-  itkNewMacro(Self);
-
   /** Run-time type information (and related methods). */
   itkTypeMacro(StackTransform, AdvancedTransform);
 
@@ -59,6 +56,7 @@ public:
   /** Typedefs from the Superclass. */
   using typename Superclass::ScalarType;
   using typename Superclass::ParametersType;
+  using typename Superclass::FixedParametersType;
   using typename Superclass::NumberOfParametersType;
   using typename Superclass::ParametersValueType;
   using typename Superclass::JacobianType;
@@ -115,9 +113,26 @@ public:
 
   /** Set the fixed parameters. */
   void
-  SetFixedParameters(const ParametersType &) override
+  SetFixedParameters(const FixedParametersType & fixedParameters) override
   {
-    // \todo: to be implemented by Coert
+    if (fixedParameters.size() < numberOfFixedParameters)
+    {
+      itkExceptionMacro(<< "The number of FixedParameters (" << fixedParameters.size() << ") should be at least "
+                        << fixedParameters.size());
+    }
+
+    if (this->Superclass::m_FixedParameters != fixedParameters)
+    {
+      this->Superclass::m_FixedParameters = fixedParameters;
+
+      m_SubTransformContainer.resize(fixedParameters[indexOfNumberOfSubTransforms]);
+
+      std::generate(
+        m_SubTransformContainer.begin(), m_SubTransformContainer.end(), [this] { return this->CreateSubTransform(); });
+      m_StackSpacing = fixedParameters[indexOfStackSpacing];
+      m_StackOrigin = fixedParameters[indexOfStackOrigin];
+      this->Modified();
+    }
   }
 
 
@@ -153,6 +168,7 @@ public:
     {
       this->m_SubTransformContainer.clear();
       this->m_SubTransformContainer.resize(num);
+      this->Superclass::m_FixedParameters[indexOfNumberOfSubTransforms] = num;
       this->Modified();
     }
   }
@@ -166,9 +182,31 @@ public:
 
 
   /** Set/get stack transform parameters. */
-  itkSetMacro(StackSpacing, TScalarType);
+  void
+  SetStackSpacing(const TScalarType newValue)
+  {
+    if (newValue != m_StackSpacing)
+    {
+      m_StackSpacing = newValue;
+      this->Superclass::m_FixedParameters[indexOfStackSpacing] = newValue;
+      this->Modified();
+    }
+  }
+
   itkGetConstMacro(StackSpacing, TScalarType);
-  itkSetMacro(StackOrigin, TScalarType);
+
+  void
+  SetStackOrigin(const TScalarType newValue)
+  {
+    if (newValue != m_StackOrigin)
+    {
+      m_StackOrigin = newValue;
+      this->Superclass::m_FixedParameters[indexOfStackOrigin] = newValue;
+      this->Modified();
+    }
+  }
+
+
   itkGetConstMacro(StackOrigin, TScalarType);
 
   /** Set the initial transform for sub transform i. */
@@ -217,6 +255,21 @@ private:
   void
   operator=(const Self &) = delete;
 
+  // Indices into the FixedParameters array, and the minimum required number of those parameters.
+  enum
+  {
+    indexOfNumberOfSubTransforms,
+    indexOfStackSpacing,
+    indexOfStackOrigin,
+    numberOfFixedParameters
+  };
+
+
+  /** Each override of this pure virtual member function should create a subtransform for the specific (derived) stack
+   * transform type. For example, for an `TranslationStackTransform` it should create an `AdvancedTranslationTransform`,
+   * and for an `EulerStackTransform` it should create an `EulerTransform`. */
+  virtual SubTransformPointer
+  CreateSubTransform() const = 0;
 
   static constexpr const char * unimplementedOverrideMessage = "Not implemented for StackTransform";
 

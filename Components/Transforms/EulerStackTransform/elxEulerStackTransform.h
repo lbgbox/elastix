@@ -21,7 +21,7 @@
 #include "elxIncludes.h"
 /** Include itk transforms needed. */
 #include "itkAdvancedCombinationTransform.h"
-#include "itkStackTransform.h"
+#include "itkEulerStackTransform.h"
 #include "itkEulerTransform.h"
 
 namespace elastix
@@ -200,7 +200,7 @@ public:
 
 protected:
   /** The constructor. */
-  EulerStackTransform() = default;
+  EulerStackTransform() { this->Superclass1::SetCurrentTransform(m_StackTransform); }
 
   /** The destructor. */
   ~EulerStackTransform() override = default;
@@ -230,10 +230,10 @@ private:
   operator=(const Self &) = delete;
 
   /** Typedef for stack transform. */
-  typedef itk::StackTransform<ElastixBase::CoordRepType, SpaceDimension, SpaceDimension> StackTransformType;
+  typedef itk::EulerStackTransform<SpaceDimension> StackTransformType;
 
   /** The Affine stack transform. */
-  typename StackTransformType::Pointer m_StackTransform;
+  const typename StackTransformType::Pointer m_StackTransform{ StackTransformType::New() };
 
   /** Dummy sub transform to be used to set sub transforms of stack transform. */
   ReducedDimensionEulerTransformPointer m_DummySubTransform;

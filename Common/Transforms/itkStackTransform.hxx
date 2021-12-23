@@ -30,7 +30,15 @@ namespace itk
 template <class TScalarType, unsigned int NInputDimensions, unsigned int NOutputDimensions>
 StackTransform<TScalarType, NInputDimensions, NOutputDimensions>::StackTransform()
   : Superclass(0)
-{} // end Constructor
+{
+  FixedParametersType fixedParameters(numberOfFixedParameters);
+
+  fixedParameters[indexOfNumberOfSubTransforms] = m_SubTransformContainer.size();
+  fixedParameters[indexOfStackOrigin] = m_StackOrigin;
+  fixedParameters[indexOfStackSpacing] = m_StackSpacing;
+
+  Superclass::m_FixedParameters = fixedParameters;
+} // end Constructor
 
 
 /**
